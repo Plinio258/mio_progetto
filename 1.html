@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Moltiplicatore</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f5f9;
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+        }
+        main {
+            background: white;
+            padding: 2rem;
+            border-radius: 14px;
+            box-shadow: 0 8px 24px #00000014;
+            width: min(90%, 380px);
+        }
+        h1 { margin-top: 0; }
+        label { display: block; margin-top: 1rem; }
+        input {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 0.75rem;
+            margin-top: 0.35rem;
+            border: 1px solid #b9c2cf;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        button {
+            width: 100%;
+            margin-top: 1.2rem;
+            padding: 0.8rem;
+            border: 0;
+            border-radius: 8px;
+            background: #1769e0;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        button:hover { background: #0e51b5; }
+        .risultato, .errore {
+            margin-top: 1rem;
+            padding: 0.8rem;
+            border-radius: 8px;
+            overflow-wrap: anywhere;
+        }
+        .risultato { background: #e8f7ec; }
+        .errore { background: #fff0f0; color: #a00000; }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Moltiplicatore</h1>
+        <p>Inserisci due numeri e premi il pulsante.</p>
+        <form method="post">
+            <label for="numero1">Primo numero</label>
+            <input id="numero1" name="numero1" type="text"
+                   inputmode="decimal" placeholder="Es. 6" required>
+
+            <label for="numero2">Secondo numero</label>
+            <input id="numero2" name="numero2" type="text"
+                   inputmode="decimal" placeholder="Es. 7" required>
+
+            <button type="submit">Moltiplica</button>
+        </form>
+
+        {% if risultato is not none %}
+            <div class="risultato">
+                <strong>Risultato:</strong> {{ risultato }}
+            </div>
+        {% endif %}
+        {% if errore %}
+            <div class="errore">{{ errore }}</div>
+        {% endif %}
+    </main>
+</body>
+</html>
