@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<elenco_mensilita><mese_anno id="1">GEN 2026
+<riga_7><data>02/02/2026</data><descrizione>sp</descrizione><importo>77.23</importo><cat>1</cat></riga_7>
+<riga_1><data>01/01/2026</data><descrizione>spesa 1</descrizione><importo>40</importo><cat>2</cat></riga_1>
+<riga_2><data>01/01/2026</data><descrizione>spesa 2</descrizione><importo>55</importo><cat>3</cat></riga_2>
+<riga_3><data>01/01/2026</data><descrizione>spesa 2</descrizione><importo>55</importo><cat>3</cat></riga_3>
+<riga_4><data>01/01/2026</data><descrizione>spesa 2</descrizione><importo>55</importo><cat>5</cat></riga_4>
+<riga_5><data>01/01/2026</data><descrizione>spesa 2</descrizione><importo>55</importo><cat>4</cat></riga_5>
+<riga_6><data>01/01/2026</data><descrizione>spesa 2</descrizione><importo>55</importo><cat>4</cat></riga_6>
+</mese_anno>
+<mese_anno id="2">FEB 2026
+<riga_7><data>22/06/2026</data><descrizione>art</descrizione><importo>75.5</importo><cat>2</cat></riga_7>
+<riga_1><data>01/02/2026</data><descrizione>spesa 1</descrizione><importo>40</importo><cat>2</cat></riga_1>
+<riga_2><data>10/02/2026</data><descrizione>spesa 2</descrizione><importo>35</importo><cat>3</cat></riga_2>
+<riga_3><data>11/02/2026</data><descrizione>spesa 2</descrizione><importo>55</importo><cat>3</cat></riga_3>
+<riga_4><data>21/02/2026</data><descrizione>spesa 2</descrizione><importo>55</importo><cat>3</cat></riga_4>
+<riga_5><data>22/02/2026</data><descrizione>spesa 2</descrizione><importo>155</importo><cat>3</cat></riga_5>
+<riga_6><data/><descrizione/><importo/><cat/></riga_6>
+</mese_anno>
+</elenco_mensilita>
