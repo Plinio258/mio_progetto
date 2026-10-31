@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Main Page</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 25px;
+            background-color: #f4f6f9;
+        }
+
+        h2 {
+            color: #263238;
+            margin-bottom: 20px;
+        }
+
+        .comandi {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 350px;
+            margin-top: 20px;
+        }
+
+        .comandi a {
+            display: block;
+            padding: 13px 18px;
+            background-color: #1976d2;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: bold;
+            border-left: 5px solid #0d47a1;
+            transition: background-color 0.2s,
+                        transform 0.2s;
+        }
+
+        .comandi a:hover {
+            background-color: #0d47a1;
+            transform: translateX(5px);
+        }
+
+        /* Colori dedicati ai singoli link */
+        .link1 {
+            background-color: #1976d2 !important;
+            border-left-color: #0d47a1 !important;
+        }
+
+        .link2 {
+            background-color: #00897b !important;
+            border-left-color: #004d40 !important;
+        }
+
+        .link3 {
+            background-color: #7b1fa2 !important;
+            border-left-color: #4a148c !important;
+        }
+
+        .link4 {
+            background-color: #ef6c00 !important;
+            border-left-color: #e65100 !important;
+        }
+
+        .link5 {
+            background-color: #c62828 !important;
+            border-left-color: #8e0000 !important;
+        }
+
+        .link6 {
+            background-color: #455a64 !important;
+            border-left-color: #263238 !important;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                margin: 12px;
+            }
+
+            .comandi {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Menu principale</h2>
+
+    <div class="comandi">
+        <a href="1.html" class="link1">
+            Temp Python
+        </a>
+
+        <a href="2.html" class="link2">
+            Gestione mensilità e spese
+        </a>
+
+        <a href="3.html" class="link3">
+            Quotazioni
+        </a>
+
+        <a href="4.html" class="link4">
+            Pagina 4
+        </a>
+
+        <a href="5.html" class="link5">
+            Pagina 5
+        </a>
+
+        <a href="gestione_mensilita.html" class="link6">
+            Gestione mensilità
+        </a>
+    </div>
+
+</body>
+</html>
