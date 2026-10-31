@@ -1,8 +1,12 @@
 SWDA.MI,iShares Core MSCI World UCITS ETF USD (Acc) (SWDA)
 AEME.PA,Amundi Core MSCI Emerging Markets UCITS ETF Acc
+FTSEMIB.MI,FTSE MIB
+^NDX,NASDAQ-100
+^N225,Nikkei 225
+^GSPC,S&P 500
+EURUSD=X,EUR/USD
+SX7E.Z,ESTX Banks I
 ISP.MI,Intesa SanPaolo
 UCG.MI,Unicredit
 STLAM.MI,Stellantis
 FCT.MI,Fincantieri
-SX7E.Z,ESTX Banks I
-FTSEMIB.MI,FTSE MIB
