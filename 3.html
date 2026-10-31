@@ -1,0 +1,626 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Quotazioni e Certificati</title>
+
+<style>
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 25px;
+    background-color: #f4f6f9;
+}
+
+h2 {
+    color: #263238;
+    font-size: 18px;
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+
+/* CONTENITORI */
+
+#borsa,
+#certificati {
+    margin-top: 20px;
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px #00000012;
+    max-width: 850px;
+}
+
+/* PULSANTE AGGIORNAMENTO */
+
+#aggiorna {
+    background: #1976d2;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 15px;
+}
+
+#aggiorna:hover {
+    background: #0d47a1;
+}
+
+#aggiorna:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+/* TABELLE */
+
+.tabella-container {
+    overflow-x: auto;
+}
+
+.azioni {
+    width: auto;
+    border-collapse: collapse;
+    background: white;
+    font-size: 11px;
+}
+
+.azioni th {
+    padding: 5px 7px;
+    line-height: 14px;
+    font-size: 10px;
+    font-weight: bold;
+    color: white;
+    background-color: #263238;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.azioni td {
+    padding: 4px 7px;
+    line-height: 14px;
+    font-size: 11px;
+    background: #e8f1fa;
+    border-bottom: 1px solid #ddd;
+    white-space: nowrap;
+}
+
+.azioni tr:hover td {
+    background-color: #c5e1e8;
+}
+
+/* VARIAZIONI */
+
+.positivo {
+    color: green;
+    font-weight: bold;
+}
+
+.negativo {
+    color: #d00000;
+    font-weight: bold;
+}
+
+/* STATI */
+
+#stato,
+#stato-certificati {
+    color: #666;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+/* RIGHE CERTIFICATI SELEZIONABILI */
+
+#certificati-table tr {
+    cursor: pointer;
+}
+
+#certificati-table tr.selezionato td {
+    background-color: #90caf9;
+    color: #0d47a1;
+    font-weight: bold;
+}
+
+/* PULSANTE CERTIFICATO */
+#apri-certificato,
+#apri-certderivati {
+    background: #1976d2;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#apri-certificato:hover,
+#apri-certderivati:hover {
+    background: #004d40;
+}
+
+#apri-certificato:disabled,
+#apri-certderivati:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+/* VERSIONE MOBILE */
+
+@media (max-width: 600px) {
+
+    body {
+        margin: 12px;
+    }
+
+    #borsa,
+    #certificati {
+        padding: 12px;
+    }
+
+    .azioni {
+        min-width: 450px;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- ================================= -->
+<!-- SEZIONE QUOTAZIONI DI BORSA       -->
+<!-- ================================= -->
+
+<div id="borsa">
+
+    <h2>📈 Quotazioni di Borsa</h2>
+
+    <button id="aggiorna" onclick="updateAll()">
+        AGGIORNA QUOTAZIONI
+    </button>
+
+    <div class="tabella-container">
+
+        <table class="azioni">
+
+            <thead>
+                <tr>
+                    <th>Titolo</th>
+                    <th>Prezzo</th>
+                    <th>Variazione %</th>
+                    <th>Ultimo aggiornamento</th>
+                </tr>
+            </thead>
+
+            <tbody id="quote-table">
+
+                <tr>
+                    <td colspan="4">Caricamento quotazioni...</td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <p id="stato">In attesa di aggiornamento...</p>
+
+</div>
+
+
+<!-- ================================= -->
+<!-- SEZIONE ELENCO CERTIFICATI        -->
+<!-- ================================= -->
+
+<!-- SEZIONE ELENCO CERTIFICATI -->
+
+<div id="certificati">
+
+    <h2>📑 Elenco Certificati</h2>
+
+    <button
+        id="apri-certificato"
+        onclick="apriSchedaCertificato()"
+        disabled>
+        APRI SCHEDA JUSTCERTIFICATE
+    </button>
+
+<button
+    id="apri-certderivati"
+    onclick="apriSchedaDerivati()"
+    disabled>
+    APRI SCHEDA CERTIFICATIEDERIVATI
+</button>
+
+    <div class="tabella-container">
+
+        <table class="azioni">
+
+            <thead>
+                <tr>
+                    <th>ISIN</th>
+                    <th>Descrizione</th>
+                </tr>
+            </thead>
+
+            <tbody id="certificati-table">
+
+                <tr>
+                    <td colspan="2">Caricamento certificati...</td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <p id="stato-certificati">
+        Seleziona un certificato dalla tabella.
+    </p>
+
+</div>
+
+
+<script>
+
+// =================================
+// CONFIGURAZIONE
+// =================================
+
+const API_URL = "https://quotazioni-apple.onrender.com";
+
+const FILE_TITOLI = "elenco_titoli.txt";
+
+const FILE_CERTIFICATI = "elenco_certificati.txt";
+
+let tickers = [];
+
+
+// =================================
+// FUNZIONE SICUREZZA HTML
+// =================================
+
+function escapeHtml(value) {
+
+    return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+    })[char]);
+
+}
+
+
+// =================================
+// CARICAMENTO ELENCO TITOLI
+// =================================
+
+async function loadTickers() {
+
+    const response = await fetch(
+        FILE_TITOLI + "?t=" + Date.now()
+    );
+
+    if (!response.ok) {
+        throw new Error("Impossibile caricare elenco_titoli.txt");
+    }
+
+    const testo = await response.text();
+
+    tickers = testo
+        .split(/\r?\n/)
+        .map(riga => riga.trim())
+        .filter(riga => riga && !riga.startsWith("#"))
+        .map(riga => {
+
+            const separatore = riga.indexOf(",");
+
+            if (separatore === -1) return null;
+
+            return {
+                symbol: riga.substring(0, separatore).trim(),
+                name: riga.substring(separatore + 1).trim()
+            };
+
+        })
+        .filter(t => t && t.symbol && t.name);
+
+    if (tickers.length === 0) {
+        throw new Error("Nessun titolo trovato nel file TXT");
+    }
+
+}
+
+
+// =================================
+// CARICAMENTO SINGOLO TITOLO
+// =================================
+
+async function updateTicker(ticker) {
+
+    try {
+
+        const response = await fetch(
+            API_URL + "/quote/" + encodeURIComponent(ticker.symbol)
+        );
+
+        if (!response.ok) {
+            throw new Error("Errore HTTP " + response.status);
+        }
+
+        const data = await response.json();
+
+        const changeClass =
+            data.change_pct >= 0 ? "positivo" : "negativo";
+
+        const sign = data.change_pct >= 0 ? "+" : "";
+
+        const price =
+            Number(data.price).toFixed(2) + " " + data.currency;
+
+        const percentage =
+            sign + Number(data.change_pct).toFixed(2) + "%";
+
+        const time = new Date(
+            data.quote_time
+        ).toLocaleString("it-IT", {
+            timeZone: data.timezone
+        });
+
+        return `
+            <tr>
+                <td><strong>${escapeHtml(ticker.name)}</strong></td>
+                <td><strong>${escapeHtml(price)}</strong></td>
+                <td class="${changeClass}">${percentage}</td>
+                <td>${escapeHtml(time)}</td>
+            </tr>
+        `;
+
+    } catch (error) {
+
+        return `
+            <tr>
+                <td><strong>${escapeHtml(ticker.name)}</strong></td>
+                <td colspan="3" class="negativo">
+                    Errore: ${escapeHtml(error.message)}
+                </td>
+            </tr>
+        `;
+
+    }
+
+}
+
+
+// =================================
+// AGGIORNAMENTO QUOTAZIONI
+// =================================
+
+async function updateAll() {
+
+    const table = document.getElementById("quote-table");
+
+    const status = document.getElementById("stato");
+
+    const button = document.getElementById("aggiorna");
+
+    button.disabled = true;
+
+    button.textContent = "AGGIORNAMENTO...";
+
+    status.textContent = "Caricamento quotazioni...";
+
+    try {
+
+        // Caricamento elenco ticker
+        await loadTickers();
+
+        table.innerHTML = "";
+
+        // Richieste parallele
+        const results = await Promise.all(
+            tickers.map(ticker => updateTicker(ticker))
+        );
+
+        table.innerHTML = results.join("");
+
+        status.textContent =
+            "Aggiornamento completato alle " +
+            new Date().toLocaleTimeString("it-IT");
+
+    } catch (error) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="4" class="negativo">
+                    ${escapeHtml(error.message)}
+                </td>
+            </tr>
+        `;
+
+        status.textContent = "Errore caricamento quotazioni.";
+
+    } finally {
+
+        button.disabled = false;
+
+        button.textContent = "AGGIORNA QUOTAZIONI";
+
+    }
+
+}
+
+
+// =================================
+// CARICAMENTO CERTIFICATI
+// =================================
+
+let isinSelezionato = null;
+
+async function loadCertificati() {
+
+    const table = document.getElementById("certificati-table");
+
+    const status = document.getElementById("stato-certificati");
+
+    const button = document.getElementById("apri-certificato");
+
+    try {
+
+        const response = await fetch(
+            FILE_CERTIFICATI + "?t=" + Date.now()
+        );
+
+        if (!response.ok) {
+            throw new Error("Errore HTTP " + response.status);
+        }
+
+        const testo = await response.text();
+
+        const certificati = testo
+            .split(/\r?\n/)
+            .map(riga => riga.trim())
+            .filter(riga => riga && !riga.startsWith("#"))
+            .map(riga => {
+
+                const separatore = riga.indexOf(",");
+
+                if (separatore === -1) return null;
+
+                return {
+                    isin: riga.substring(0, separatore).trim(),
+                    descrizione: riga.substring(separatore + 1).trim()
+                };
+
+            })
+            .filter(c => c && c.isin && c.descrizione);
+
+        if (certificati.length === 0) {
+            throw new Error("Nessun certificato trovato");
+        }
+
+        isinSelezionato = null;
+        button.disabled = true;
+
+        table.innerHTML = certificati.map((c, index) => `
+            <tr data-isin="${escapeHtml(c.isin)}"
+                onclick="selezionaCertificato(this)">
+                <td><strong>${escapeHtml(c.isin)}</strong></td>
+                <td>${escapeHtml(c.descrizione)}</td>
+            </tr>
+        `).join("");
+
+        status.textContent =
+            certificati.length +
+            " certificati caricati. Seleziona una riga.";
+
+    } catch (error) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="2" class="negativo">
+                    ${escapeHtml(error.message)}
+                </td>
+            </tr>
+        `;
+
+        status.textContent = "Errore caricamento certificati.";
+
+    }
+
+}
+
+
+// =================================
+// SELEZIONE CERTIFICATO
+// =================================
+
+function selezionaCertificato(riga) {
+
+    document.querySelectorAll("#certificati-table tr")
+        .forEach(tr => tr.classList.remove("selezionato"));
+
+    riga.classList.add("selezionato");
+
+    isinSelezionato = riga.dataset.isin;
+
+    document.getElementById("apri-certificato").disabled = false;
+
+    document.getElementById("apri-certderivati").disabled = false;
+
+    document.getElementById("stato-certificati").textContent =
+        "Certificato selezionato: " + isinSelezionato;
+
+}
+
+
+// =================================
+// APERTURA SCHEDA JUSTCERTIFICATE
+// =================================
+
+function apriSchedaCertificato() {
+
+    if (!isinSelezionato) {
+        alert("Seleziona prima un certificato.");
+        return;
+    }
+
+    const url =
+        "https://justcertificate.com/certificate/" +
+        encodeURIComponent(isinSelezionato) +
+        "/scheda";
+
+    window.open(url, "_blank", "noopener,noreferrer");
+
+}
+
+// =================================
+// APERTURA SCHEDA CERTIFICATIEDERIVATI
+// =================================
+
+function apriSchedaDerivati() {
+
+    if (!isinSelezionato) {
+        alert("Seleziona prima un certificato.");
+        return;
+    }
+
+    const url =
+        "https://www.certificatiederivati.it/db_bs_scheda_certificato.asp?isin=" +
+        encodeURIComponent(isinSelezionato);
+
+    window.open(url, "_blank", "noopener,noreferrer");
+
+}
+
+
+// =================================
+// AVVIO AUTOMATICO
+// =================================
+
+// Caricamento iniziale quotazioni
+updateAll();
+
+// Caricamento iniziale certificati
+loadCertificati();
+
+// Aggiornamento quotazioni ogni 5 minuti
+setInterval(updateAll, 300000);
+
+</script>
+
+</body>
+</html>
