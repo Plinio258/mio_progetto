@@ -149,7 +149,9 @@ button:disabled {
 <label>PASSWORD APPLICATIVA:</label>
 
 <div class="password-container">
-
+<button type="button" onclick="testRender()">
+    TEST RENDER
+</button>
 <input
     type="password"
     name="password"
@@ -222,7 +224,32 @@ INVIA EMAIL
 
 
 <script>
+async function testRender() {
 
+    const risultato = document.getElementById("risultato");
+
+    risultato.textContent = "Connessione in corso...";
+
+    try {
+
+        const risposta = await fetch(
+            "https://invio-email.onrender.com/test",
+            {
+                method: "POST"
+            }
+        );
+
+        const dati = await risposta.json();
+
+        risultato.textContent = dati.stato;
+
+    } catch (errore) {
+
+        risultato.textContent = "ERRORE: " + errore.message;
+
+    }
+}
+    
 // Mostra o nasconde la password
 
 function mostraPassword() {
