@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quotazioni e Certificati</title>
+<style>
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 25px;
+    background: #000;
+}
+
+h2 {
+    color: white;
+    font-size: 18px;
+    margin: 0 0 12px;
+}
+
+/* =================================
+   CONTENITORE PRINCIPALE
+================================= */
+
+.contenitore-principale {
+    display: grid;
+    grid-template-columns: minmax(0, 0.84fr) minmax(0, 1fr);
+    column-gap: 15px;
+    width: 100%;
+    max-width: 1600px;
+    margin: 10px 0;
+    padding: 5px;
+    box-sizing: border-box;
+    align-items: start;
+}
+
+/* =================================
+   COLONNE INDIPENDENTI
+================================= */
+
+.colonna-sinistra,
+.colonna-destra {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* Distanza tra quotazioni e grafico */
+.colonna-sinistra {
+    grid-column: 1;
+    gap: 15px;
+}
+
+/* Distanza tra certificati, ETF e BTP */
+.colonna-destra {
+    grid-column: 2;
+    gap: 6px;
+}
+
+/* =================================
+   SFONDO E DIMENSIONI DIV
+================================= */
+
+#borsa,
+#div5,
+#certificati,
+#div3,
+#div4 {
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    background: #404040;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px #00000012;
+}
+
+/* =================================
+   PULSANTI
+================================= */
+
+#aggiorna,
+#apri-certificato,
+#apri-certderivati,
+#apri-etf {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 19px;
+    min-height: 19px;
+    padding: 0 5px;
+    margin: 3px 3px 6px 0;
+    box-sizing: border-box;
+    background: #1976d2;
+    color: white;
+    border: 0;
+    border-radius: 4px;
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+    line-height: 19px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#aggiorna:disabled,
+#apri-certificato:disabled,
+#apri-certderivati:disabled,
+#apri-etf:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* =================================
+   TABELLE
+================================= */
+
+.tabella-container {
+    overflow-x: auto;
+}
+
+.azioni {
+    width: auto;
+    border-collapse: collapse;
+    background: white;
+    font-size: 11px;
+}
+
+.azioni th {
+    padding: 5px 7px;
+    line-height: 14px;
+    font-size: 10px;
+    font-weight: normal;
+    color: white;
+    background: #263238;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.azioni td {
+    padding: 4px 7px;
+    line-height: 14px;
+    font-size: 10px;
+font-weight: normal;
+    background: #e8f1fa;
+    border-bottom: 1px solid #ddd;
+    white-space: nowrap;
+}
+
+.azioni tr:hover td {
+    background: #c5e1e8;
+}
+
+/* =================================
+   VARIAZIONI POSITIVE E NEGATIVE
+================================= */
+
+.positivo {
+    color: green;
+    font-weight: normal;
+}
+
+.negativo {
+    color: #d00000;
+    font-weight: normal;
+}
+
+/* =================================
+   STATO
+================================= */
+
+#stato,
+#stato-certificati,
+#stato-etf {
+    color: #333;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+/* =================================
+   SELEZIONE CERTIFICATI ED ETF
+================================= */
+
+#certificati-table tr,
+#etf-table tr {
+    cursor: pointer;
+}
+
+#certificati-table tr.selezionato td,
+#etf-table tr.selezionato td {
+    background: #90caf9;
+    color: #0d47a1;
+    font-weight: normal;
+}
+
+/* =================================
+   TABELLA ETF
+================================= */
+
+#etf-table td {
+    background: #e8f1fa !important;
+}
+
+#etf-table tr:hover td {
+    background: #c5e1e8 !important;
+}
+
+#etf-table tr.selezionato td {
+    background: #90caf9 !important;
+    color: #0d47a1;
+}
+
+/* RIGA TOTALI ETF */
+
+#etf-table tr.riga-totale-etf td {
+    background: #c5d5e5 !important;
+    color: #263238;
+    font-weight: bold;
+    border-top: 2px solid #78909c;
+}
+
+/* =================================
+   GRAFICO A TORTA
+================================= */
+/*
+#grafico-torta {
+    width: 220px;
+    height: 220px;
+    max-width: 100%;
+    border-radius: 50%;
+    margin: 20px auto;
+    background: #ccc;
+}
+*/
+
+/* =================================
+   LEGENDA PORTAFOGLIO
+================================= */
+
+/* CONTENITORE GRAFICO E LEGENDA */
+#div5 .composizione-contenuto {
+    display: grid;
+    grid-template-columns: 230px minmax(0, 1fr);
+    align-items: center;
+    gap: 20px;
+}
+
+/* GRAFICO A TORTA */
+#grafico-torta {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin: 10px 0;
+    background: #ccc;
+    flex-shrink: 0;
+}
+
+/* LEGENDA */
+#legenda-portafoglio {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    font-size: 12px;
+    line-height: 18px;
+    min-width: 0;
+}
+
+.voce-legenda {
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    color: white;
+    line-height: 18px;
+    min-height: 18px;
+}
+
+.nome-legenda {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.valore-legenda {
+    text-align: left;
+    white-space: nowrap;
+}
+
+#totale-portafoglio {
+    color: white;
+    font-size: 12px;
+    font-weight: normal;
+    text-align: left;
+    line-height: 18px;
+    margin: 8px 0 0 0;
+    padding: 0;
+}
+
+/* MOBILE */
+@media (max-width: 650px) {
+    #div5 .composizione-contenuto {
+        grid-template-columns: 1fr;
+        justify-items: center;
+    }
+
+    #legenda-portafoglio {
+        width: 100%;
+    }
+}
+
+</style>
+</head>
+<body>
+<div class="contenitore-principale">
+
+<div class="colonna-sinistra">
+
+<div id="div5">
+
+    <h2>📊 Composizione Portafoglio</h2>
+
+    <div class="composizione-contenuto">
+
+    <div id="grafico-torta"></div>
+
+    <div>
+        <div id="legenda-portafoglio"></div>
+
+        <p id="totale-portafoglio"></p>
+    </div>
+
+</div>
+    
+
+</div>
+
+<div id="borsa">
+<h2>📈 Quotazioni di Borsa</h2>
+<button id="aggiorna" onclick="updateAll()">AGGIORNA QUOTAZIONI</button>
+<div class="tabella-container">
+<table class="azioni">
+<thead><tr><th>Titolo</th><th>Prezzo</th><th>Variazione %</th><th>Ultimo aggiornamento</th></tr></thead>
+<tbody id="quote-table"><tr><td colspan="4">Caricamento quotazioni...</td></tr></tbody>
+</table>
+</div>
+<p id="stato">In attesa di aggiornamento...</p>
+</div>
+
+</div>
+
+<div class="colonna-destra">
+<div id="certificati">
+<h2>📑 Elenco Certificati</h2>
+<button id="apri-certificato" onclick="apriSchedaCertificato()" disabled>SCHEDA JUST CERTIFICATE</button>
+<button id="apri-certderivati" onclick="apriSchedaDerivati()" disabled>SCHEDA CERTIFICATI e DERIVATI</button>
+<div class="tabella-container">
+<table class="azioni">
+<thead>
+<tr>
+    <th>ISIN</th>
+    <th>Descrizione</th>
+    <th>Q.tà</th>
+    <th>P.U.</th>
+    <th>Investimento</th>
+    <th>Cedola</th>
+    <th>Cedola Anno</th>
+    <th>Barriere</th>
+    <th>Scadenza</th>
+</tr>
+</thead>
+<tbody id="certificati-table">
+<tr><td colspan="9">Caricamento certificati...</td></tr>
+</tbody>
+</table>
+</div>
+
+</div>
+<div id="div3">
+<h2>📊 Elenco ETF</h2>
+<button id="apri-etf" onclick="apriSchedaETF()" disabled>SCHEDA JUSTETF</button>
+<div class="tabella-container">
+<table class="azioni">
+<thead>
+<tr>
+    <th>ISIN</th>
+    <th>Nome ETF</th>
+    <th>Q.tà</th>
+    <th>P.U.</th>
+    <th>Invest</th>
+    <th>Quot</th>
+    <th>Valore</th>
+    <th>% Portafoglio</th>
+    <th>Var %</th>
+    <th>Var €</th>
+</tr>
+</thead>
+<tbody id="etf-table">
+<tr><td colspan="10">Caricamento ETF...</td></tr>
+</tbody>
+</table>
+</div>
+
+</div>
+<div id="div4">
+    <h2>📈 Elenco BTP</h2>
+
+    <div class="tabella-container">
+        <table class="azioni">
+            <thead>
+                <tr>
+                    <th>ISIN</th>
+                    <th>Descrizione</th>
+                    <th>Q.tà</th>
+                    <th>P.U.</th>
+                    <th>Investimento</th>
+                    <th>Cedola Annua</th>
+                    <th>Scadenza</th>
+                </tr>
+            </thead>
+            <tbody id="btp-table">
+                <tr>
+                    <td colspan="7">Caricamento BTP...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+</div>
+<script>
+const API_URL="https://quotazioni-apple.onrender.com";
+const FILE_DATI="elenco_dati.txt";
+let righeDati=[];
+let tickers=[];
+let certificati=[];
+let etf=[];
+let btp=[];
+let quotazioniETF={};
+let isinSelezionato=null;
+let isinETFSelezionato=null;
+let aggiornamentoInCorso=false;
+let liquidita=0;
+
+function escapeHtml(value){
+return String(value).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"})[char]);
+}
+function trovaSezione(righe,nome){
+let sezione="";
+const risultato=[];
+for(const rigaOriginale of righe){
+const riga=rigaOriginale.trim();
+if(!riga||riga.startsWith("#"))continue;
+const prima=riga.split(",")[0].trim().toUpperCase();
+if(prima==="QUOTAZIONI"){sezione="QUOTAZIONI";continue;}
+if(prima==="CERTIFICATI"){sezione="CERTIFICATI";continue;}
+if(prima==="ETF"){sezione="ETF";continue;}
+if(prima==="BTP"){sezione="BTP";continue;}
+if(prima==="LIQUIDITA"){sezione="LIQUIDITA";continue;}
+if(sezione===nome)risultato.push(riga);
+}
+return risultato;
+}
+// =================================
+// FUNZIONE 1 - CARICAMENTO ETF
+// =================================
+async function caricaETF(righe){
+etf=[];
+const dati=trovaSezione(righe,"ETF");
+for(const riga of dati){
+const campi=riga.split(",").map(x=>x.trim());
+if(campi.length<5)continue;
+const id=campi[0];
+const isin=campi[1];
+const nome=campi[2];
+const quantita=Number(campi[3]);
+const prezzo=Number(campi[4]);
+if(!id||!isin||!nome||!Number.isFinite(quantita)||!Number.isFinite(prezzo))continue;
+etf.push({id,isin,nome,quantita,prezzo,importo:quantita*prezzo});
+}
+mostraETF();
+console.log("ETF caricati:",etf);
+}
+
+// =================================
+// FUNZIONE 2 - CARICAMENTO CERTIFICATI
+// =================================
+async function caricaCertificati(righe){
+
+    certificati=[];
+
+    const dati=trovaSezione(righe,"CERTIFICATI");
+
+    for(const riga of dati){
+
+        const campi=riga.split(",").map(x=>x.trim());
+
+        if(campi.length<8) continue;
+
+        const isin=campi[0];
+        const descrizione=campi[1];
+        const quantita=Number(campi[2]);
+        const prezzo=Number(campi[3]);
+        const cedola=campi[4];
+        const cedolaAnno=campi[5];
+        const barriera=campi[6];
+        const scadenza=campi[7];
+
+        // Controllo validità dati
+        if(
+            !isin ||
+            !descrizione ||
+            !Number.isFinite(quantita) ||
+            !Number.isFinite(prezzo)
+        ) continue;
+
+        // Calcolo investimento
+        const investimento=quantita*prezzo;
+
+        certificati.push({
+            isin,
+            descrizione,
+            quantita,
+            prezzo,
+            investimento,
+            cedola,
+            cedolaAnno,
+            barriera,
+            scadenza
+        });
+    }
+
+    // Visualizzazione tabella certificati
+    mostraCertificati();
+
+    console.log("Certificati caricati:",certificati);
+}
+
+// =================================
+// FUNZIONE - CARICAMENTO BTP
+// =================================
+async function caricaBTP(righe){
+
+    btp=[];
+
+    const dati=trovaSezione(righe,"BTP");
+
+    for(const riga of dati){
+
+        const campi=riga.split(",").map(x=>x.trim());
+
+        if(campi.length<7) continue;
+
+        const id=campi[0];
+        const isin=campi[1];
+        const descrizione=campi[2];
+        const quantita=Number(campi[3]);
+        const prezzo=Number(campi[4]);
+        const cedolaAnno=campi[5];
+        const scadenza=campi[6];
+
+        if(
+            !id ||
+            !isin ||
+            !descrizione ||
+            !Number.isFinite(quantita) ||
+            !Number.isFinite(prezzo)
+        ) continue;
+
+        const investimento=quantita*prezzo;
+
+        btp.push({
+            id,
+            isin,
+            descrizione,
+            quantita,
+            prezzo,
+            investimento,
+            cedolaAnno,
+            scadenza
+        });
+    }
+
+    mostraBTP();
+
+    console.log("BTP caricati:",btp);
+}
+// =================================
+// VISUALIZZAZIONE BTP
+// =================================
+function mostraBTP(){
+
+    const table=document.getElementById("btp-table");
+
+    if(btp.length===0){
+        table.innerHTML=
+            '<tr><td colspan="7" class="negativo">Nessun BTP trovato.</td></tr>';
+        return;
+    }
+
+    table.innerHTML=btp.map(b=>`
+
+        <tr>
+
+            <td>${escapeHtml(b.isin)}</td>
+
+            <td>${escapeHtml(b.descrizione)}</td>
+
+            <td>${b.quantita}</td>
+
+            <td>${b.prezzo.toFixed(2)}</td>
+
+            <td>${b.investimento.toFixed(2)}</td>
+
+            <td>${escapeHtml(b.cedolaAnno)}</td>
+
+            <td>${escapeHtml(b.scadenza)}</td>
+
+        </tr>
+
+    `).join("");
+}
+
+// =================================
+// FUNZIONE 3 - CARICAMENTO QUOTAZIONI
+// =================================
+async function caricaQuotazioni(righe){
+    tickers=[];
+    const dati=trovaSezione(righe,"QUOTAZIONI");
+
+    for(const riga of dati){
+        const campi=riga.split(",").map(x=>x.trim());
+
+        if(campi.length<3)continue;
+
+        const id=campi[0];
+        const symbol=campi[1];
+        const name=campi.slice(2).join(",");
+
+        if(!symbol||!name)continue;
+
+        tickers.push({id,symbol,name});
+    }
+
+    console.log("Quotazioni caricate:",tickers);
+}
+// =================================
+// CARICAMENTO FILE E SEQUENZA
+// =================================
+async function loadDati(){
+    const response=await fetch(FILE_DATI+"?t="+Date.now(),{
+        cache:"no-store"
+    });
+
+    if(!response.ok)
+        throw new Error("Impossibile caricare elenco_dati.txt: HTTP "+response.status);
+
+    const testo=await response.text();
+
+    righeDati=testo.split(/\r?\n/);
+
+    // Prima carichiamo i ticker
+    await caricaQuotazioni(righeDati);
+
+// Poi ETF, certificati, BTP e liquidità
+    await caricaETF(righeDati);
+    await caricaCertificati(righeDati);
+await caricaBTP(righeDati);
+await caricaLiquidita(righeDati);
+
+// Composizione patrimonio
+mostraGraficoPortafoglio();
+}
+
+// =================================
+// AGGIORNAMENTO SINGOLO TITOLO
+// =================================
+async function updateTicker(ticker){
+try{
+console.log("Richiesta quotazione:",ticker.symbol);
+const response=await fetch(API_URL+"/quote/"+encodeURIComponent(ticker.symbol));
+if(!response.ok)throw new Error("Errore HTTP "+response.status);
+const data=await response.json();
+const prezzo=Number(data.price);
+const variazione=Number(data.change_pct);
+// Memorizza la quotazione per il collegamento con gli ETF
+quotazioniETF[ticker.symbol]={
+    prezzo:prezzo,
+    valuta:data.currency||""
+};
+if(!Number.isFinite(prezzo)||!Number.isFinite(variazione))throw new Error("Dati quotazione non validi");
+const changeClass=variazione>=0?"positivo":"negativo";
+const sign=variazione>=0?"+":"";
+const price=prezzo.toFixed(3)+" "+(data.currency||"");
+const percentage=sign+variazione.toFixed(2)+"%";
+const dataOra=new Date(data.quote_time);
+const time=Number.isNaN(dataOra.getTime())?"Non disponibile":dataOra.toLocaleString("it-IT",data.timezone?{timeZone:data.timezone}:undefined);
+return `<tr><td><strong>${escapeHtml(ticker.name)}</strong></td><td><strong>${escapeHtml(price)}</strong></td><td class="${changeClass}">${escapeHtml(percentage)}</td><td>${escapeHtml(time)}</td></tr>`;
+}catch(error){
+console.error("Errore ticker "+ticker.symbol,error);
+return `<tr><td><strong>${escapeHtml(ticker.name)}</strong></td><td colspan="3" class="negativo">Errore ${escapeHtml(ticker.symbol)}: ${escapeHtml(error.message)}</td></tr>`;
+}
+}
+// =================================
+// AGGIORNAMENTO COMPLETO
+// =================================
+async function updateAll(){
+    if(aggiornamentoInCorso)return;
+
+    aggiornamentoInCorso=true;
+
+    // Azzera la cache delle quotazioni ETF
+    quotazioniETF={};
+
+    const table=document.getElementById("quote-table");
+const status=document.getElementById("stato");
+const button=document.getElementById("aggiorna");
+button.disabled=true;
+button.textContent="AGGIORNAMENTO...";
+status.textContent="Caricamento ETF, certificati e quotazioni...";
+try{
+await loadDati();
+if(tickers.length===0){
+table.innerHTML='<tr><td colspan="4" class="negativo">Nessun ticker trovato nella sezione QUOTAZIONI.</td></tr>';
+status.textContent="Nessuna quotazione da aggiornare.";
+return;
+}
+table.innerHTML="";
+const risultati=await Promise.all(tickers.map(ticker=>updateTicker(ticker)));
+table.innerHTML=risultati.join("");
+// Aggiorna la tabella ETF con le nuove quotazioni
+mostraETF();
+status.textContent="Aggiornamento completato alle "+new Date().toLocaleTimeString("it-IT")+" - "+tickers.length+" titoli.";
+}catch(error){
+console.error("Errore aggiornamento generale:",error);
+table.innerHTML=`<tr><td colspan="4" class="negativo">${escapeHtml(error.message)}</td></tr>`;
+status.textContent="Errore caricamento dati.";
+}finally{
+button.disabled=false;
+button.textContent="AGGIORNA QUOTAZIONI";
+aggiornamentoInCorso=false;
+}
+}
+
+// =================================
+// VISUALIZZAZIONE CERTIFICATI
+// =================================
+function mostraCertificati(){
+
+    const table=document.getElementById("certificati-table");
+
+    document.getElementById("apri-certificato").disabled=true;
+    document.getElementById("apri-certderivati").disabled=true;
+
+    isinSelezionato=null;
+
+    if(certificati.length===0){
+        table.innerHTML='<tr><td colspan="9" class="negativo">Nessun certificato trovato.</td></tr>';
+        return;
+    }
+
+    table.innerHTML=certificati.map(c=>`
+
+        <tr data-isin="${escapeHtml(c.isin)}"
+            onclick="selezionaCertificato(this)">
+
+            <td>${escapeHtml(c.isin)}</td>
+            <td>${escapeHtml(c.descrizione)}</td>
+            <td>${c.quantita}</td>
+            <td>${c.prezzo.toFixed(2)}</td>
+            <td>${c.investimento.toFixed(2)}</td>
+            <td>${escapeHtml(c.cedola)}</td>
+            <td>${escapeHtml(c.cedolaAnno)}</td>
+            <td>${escapeHtml(c.barriera)}</td>
+            <td>${escapeHtml(c.scadenza)}</td>
+
+        </tr>
+
+    `).join("");
+}
+
+// =================================
+// SELEZIONE CERTIFICATO
+// =================================
+function selezionaCertificato(riga){
+
+    document.querySelectorAll("#certificati-table tr")
+        .forEach(tr=>tr.classList.remove("selezionato"));
+
+    riga.classList.add("selezionato");
+
+    isinSelezionato=riga.dataset.isin;
+
+    document.getElementById("apri-certificato").disabled=false;
+    document.getElementById("apri-certderivati").disabled=false;
+}
+
+// =================================
+// APERTURA JUST CERTIFICATE
+// =================================
+function apriSchedaCertificato(){
+
+    if(!isinSelezionato)return;
+
+    const url="https://justcertificate.com/certificate/"
+        +encodeURIComponent(isinSelezionato)+"/scheda";
+
+    window.open(url,"_blank","noopener,noreferrer");
+}
+
+// =================================
+// APERTURA CERTIFICATI E DERIVATI
+// =================================
+function apriSchedaDerivati(){
+
+    if(!isinSelezionato)return;
+
+    const url="https://www.certificatiederivati.it/db_bs_scheda_certificato.asp?isin="
+        +encodeURIComponent(isinSelezionato);
+
+    window.open(url,"_blank","noopener,noreferrer");
+}
+
+// =================================
+// VISUALIZZAZIONE ETF
+// =================================
+
+function mostraETF(){
+
+    const table=document.getElementById("etf-table");
+
+    isinETFSelezionato=null;
+    document.getElementById("apri-etf").disabled=true;
+
+    if(etf.length===0){
+        table.innerHTML=
+            '<tr><td colspan="10" class="negativo">Nessun ETF trovato.</td></tr>';
+        return;
+    }
+
+    // Calcolo dati ETF
+    const datiETF=etf.map(e=>{
+
+        const ticker=tickers.find(t=>t.id===e.id);
+
+        const quotazione=ticker
+            ?quotazioniETF[ticker.symbol]
+            :null;
+
+        const prezzo=quotazione && Number.isFinite(quotazione.prezzo)
+            ?quotazione.prezzo
+            :null;
+
+        const investimento=e.quantita*e.prezzo;
+
+        const valore=prezzo!==null
+            ?e.quantita*prezzo
+            :null;
+
+        const variazione=prezzo!==null && e.prezzo!==0
+            ?((prezzo-e.prezzo)/e.prezzo)*100
+            :null;
+
+        const variazioneEuro=prezzo!==null
+            ?(prezzo-e.prezzo)*e.quantita
+            :null;
+
+        return {
+            ...e,
+            investimento,
+            prezzoAttuale:prezzo,
+            valore,
+            variazione,
+            variazioneEuro
+        };
+
+    });
+
+    // TOTALI
+    const totaleInvestimento=datiETF.reduce(
+        (s,e)=>s+e.investimento,0
+    );
+
+    const totaleValore=datiETF.reduce(
+        (s,e)=>s+(e.valore??0),0
+    );
+
+    const totaleVariazioneEuro=datiETF.reduce(
+        (s,e)=>s+(e.variazioneEuro??0),0
+    );
+
+    // RIGHE ETF
+    const righe=datiETF.map(e=>{
+
+        const percentuale=totaleValore>0 && e.valore!==null
+            ?(e.valore/totaleValore)*100
+            :null;
+
+        const classeVar=e.variazione===null
+            ?""
+            :e.variazione>0
+                ?"positivo"
+                :e.variazione<0
+                    ?"negativo"
+                    :"";
+
+        const classeVarEuro=e.variazioneEuro===null
+            ?""
+            :e.variazioneEuro>0
+                ?"positivo"
+                :e.variazioneEuro<0
+                    ?"negativo"
+                    :"";
+
+        const variazioneHTML=e.variazione!==null
+            ?(e.variazione>0?"+":"")+e.variazione.toFixed(2)+"%"
+            :"--";
+
+        const quotazioneHTML=e.prezzoAttuale!==null
+            ?e.prezzoAttuale.toFixed(3)
+            :"--";
+
+        const valoreHTML=e.valore!==null
+            ?e.valore.toFixed(2)
+            :"--";
+
+        const percentualeHTML=percentuale!==null
+            ?percentuale.toFixed(2)+"%"
+            :"--";
+
+        const variazioneEuroHTML=e.variazioneEuro!==null
+            ?(e.variazioneEuro>0?"+":"")+e.variazioneEuro.toFixed(2)
+            :"--";
+
+        return `
+            <tr data-isin="${escapeHtml(e.isin)}"
+                onclick="selezionaETF(this)">
+
+                <td>${escapeHtml(e.isin)}</td>
+                <td>${escapeHtml(e.nome)}</td>
+                <td>${e.quantita}</td>
+                <td>${e.prezzo.toFixed(3)}</td>
+                <td>${e.investimento.toFixed(2)}</td>
+                <td>${quotazioneHTML}</td>
+                <td>${valoreHTML}</td>
+                <td>${percentualeHTML}</td>
+                <td class="${classeVar}">${variazioneHTML}</td>
+                <td class="${classeVarEuro}">${variazioneEuroHTML}</td>
+
+            </tr>
+        `;
+
+    }).join("");
+
+    // RIGA TOTALI
+    const rigaTotali=`
+        <tr class="riga-totale-etf">
+
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+
+            <td>${totaleInvestimento.toFixed(2)}</td>
+
+            <td></td>
+
+            <td>${totaleValore.toFixed(2)}</td>
+
+            <td></td>
+            <td></td>
+
+            <td class="${
+                totaleVariazioneEuro>0
+                    ?"positivo"
+                    :totaleVariazioneEuro<0
+                        ?"negativo"
+                        :""
+            }">
+                ${(totaleVariazioneEuro>0?"+":"")+totaleVariazioneEuro.toFixed(2)}
+            </td>
+
+        </tr>
+    `;
+
+    table.innerHTML=righe+rigaTotali;
+
+}
+
+
+// =================================
+// SELEZIONE ETF
+// =================================
+function selezionaETF(riga){
+
+    document.querySelectorAll("#etf-table tr")
+        .forEach(tr=>tr.classList.remove("selezionato"));
+
+    riga.classList.add("selezionato");
+
+    isinETFSelezionato=riga.dataset.isin;
+
+    document.getElementById("apri-etf").disabled=false;
+}
+
+// =================================
+// APERTURA SCHEDA JUSTETF
+// =================================
+function apriSchedaETF(){
+
+    if(!isinETFSelezionato)return;
+
+    const url="https://www.justetf.com/it/etf-profile.html?isin="
+        +encodeURIComponent(isinETFSelezionato);
+
+    window.open(url,"_blank","noopener,noreferrer");
+}
+
+// =================================
+// CARICAMENTO LIQUIDITA
+// =================================
+async function caricaLiquidita(righe){
+
+    const dati=trovaSezione(righe,"LIQUIDITA");
+
+    liquidita=0;
+
+    if(dati.length>0){
+
+        const valore=Number(
+            dati[0].replace(",",".")
+        );
+
+        if(Number.isFinite(valore)){
+    liquidita=valore;
+}
+    }
+
+    console.log("Liquidità caricata:",liquidita);
+}
+
+// =================================
+// GRAFICO COMPOSIZIONE PORTAFOGLIO
+// =================================
+function mostraGraficoPortafoglio(){
+
+    // Somma investimenti certificati
+    const totaleCertificati=certificati.reduce(
+        (somma,c)=>somma+c.quantita*c.prezzo,0
+    );
+
+    // Somma investimenti ETF
+    const totaleETF=etf.reduce(
+        (somma,e)=>somma+e.quantita*e.prezzo,0
+    );
+
+    // Somma investimenti BTP
+    const totaleBTP=btp.reduce(
+        (somma,b)=>somma+b.quantita*b.prezzo,0
+    );
+
+    // Liquidità
+    const totaleLiquidita=liquidita;
+
+    // Totale patrimonio
+    const totale=
+        totaleCertificati+
+        totaleETF+
+        totaleBTP+
+        totaleLiquidita;
+
+    const componenti=[
+        {
+            nome:"Certificati",
+            valore:totaleCertificati,
+            colore:"#1976d2"
+        },
+        {
+            nome:"ETF",
+            valore:totaleETF,
+            colore:"#36E286"
+        },
+        {
+            nome:"BTP",
+            valore:totaleBTP,
+            colore:"#FFA824"
+        },
+        {
+            nome:"Liquidità",
+            valore:totaleLiquidita,
+            colore:"#C1C1C1"
+        }
+    ];
+
+   function formattaEuro(valore) {
+    const numero = Number(valore);
+
+    return "€ " + numero.toLocaleString("it-IT", {
+        useGrouping: true,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+    // Calcolo percentuali e gradient
+    let posizione=0;
+
+    const gradient=componenti.map(c=>{
+
+        const percentuale=totale>0
+            ?(c.valore/totale)*100
+            :0;
+
+        const inizio=posizione;
+
+        posizione+=percentuale;
+
+        return `${c.colore} ${inizio}% ${posizione}%`;
+
+    }).join(",");
+
+    // Disegna grafico
+    const grafico=document.getElementById("grafico-torta");
+
+    grafico.style.background=totale>0
+        ?`conic-gradient(${gradient})`
+        :"#ccc";
+
+ // Legenda in linea con importi in euro
+document.getElementById("legenda-portafoglio").innerHTML=
+    componenti.map(c=>{
+
+        const percentuale=totale>0
+            ?(c.valore/totale)*100
+            :0;
+
+        return `
+            <div class="voce-legenda">
+
+                <div class="nome-legenda">
+                    <span class="colore-legenda"
+                        style="background:${c.colore}">
+                    </span>
+                    <span>${c.nome}</span>
+                </div>
+
+                <span class="valore-legenda">
+                   ${formattaEuro(c.valore)}
+                    (${percentuale.toFixed(2)}%)
+                </span>
+
+            </div>
+        `;
+    }).join("");
+
+    // Totale patrimonio
+   document.getElementById("totale-portafoglio").textContent=
+    "Totale Investito: "+formattaEuro(totale);
+
+    console.log("Composizione portafoglio:",componenti);
+}
+
+// =================================
+// AVVIO AUTOMATICO
+// =================================
+
+updateAll();
+setInterval(()=>{
+if(!aggiornamentoInCorso)updateAll();
+},600000);
+</script>
+</body>
+</html>
