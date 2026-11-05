@@ -1,0 +1,723 @@
+
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Invio Email - Accesso Riservato</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: #000;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 10px;
+}
+
+.contenitore {
+    background: #404040;
+    max-width: 450px;
+    margin: auto;
+    padding: 14px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+h2 {
+    text-align: center;
+    color: white;
+    font-size: 17px;
+    margin: 0 0 12px 0;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    font-size: 11px;
+    margin-top: 7px;
+    color: white;
+}
+
+input,
+textarea {
+    width: 100%;
+    padding: 6px 8px;
+    margin-top: 3px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    font-size: 11px;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 65px;
+    height: 65px;
+}
+
+input:focus,
+textarea:focus {
+    outline: none;
+    border-color: #0f86fc;
+}
+
+input[type="file"] {
+    background: white;
+    color: #333;
+    font-size: 10px;
+}
+
+button.invia {
+    width: 100%;
+    background: #0f86fc;
+    color: white;
+    border: none;
+    padding: 9px;
+    margin-top: 12px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button.invia:hover {
+    background: #086acb;
+}
+
+button:disabled {
+    background: #999;
+    cursor: not-allowed;
+}
+
+#risultato,
+#messaggioLogin {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    overflow-wrap: anywhere;
+}
+
+.nota {
+    font-size: 9px;
+    color: #ccc;
+    margin: 3px 0;
+}
+
+#listaAllegati {
+    color: #ddd;
+    font-size: 10px;
+    margin-top: 5px;
+    overflow-wrap: anywhere;
+}
+
+#listaAllegati ul {
+    padding-left: 18px;
+    margin: 4px 0;
+}
+
+#schermataAccesso {
+    margin-top: 40px;
+}
+
+#passwordAccesso {
+    font-size: 14px;
+    padding: 10px;
+}
+
+#pulsanteEsci {
+    background: #555;
+    color: white;
+    border: none;
+    padding: 8px;
+    margin-top: 12px;
+    border-radius: 5px;
+    font-size: 11px;
+    cursor: pointer;
+    width: 100%;
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+<!-- ========================================= -->
+<!-- SCHERMATA ACCESSO -->
+<!-- ========================================= -->
+
+<div class="contenitore" id="schermataAccesso"
+     style="display:none">
+
+    <h2>ACCESSO RISERVATO</h2>
+
+    <form id="loginForm">
+
+        <label>PASSWORD:</label>
+
+        <input
+            type="password"
+            id="passwordAccesso"
+            placeholder="Inserisci la password"
+            required
+            autocomplete="current-password"
+        >
+
+        <button
+            type="submit"
+            class="invia"
+            id="pulsanteAccesso"
+        >
+            ACCEDI
+        </button>
+
+    </form>
+
+    <p id="messaggioLogin"></p>
+
+</div>
+
+
+<!-- ========================================= -->
+<!-- MODULO INVIO EMAIL -->
+<!-- ========================================= -->
+
+<div id="areaEmail" style="display:none">
+
+<div class="contenitore">
+
+<h2>INVIO EMAIL</h2>
+
+<form id="emailForm">
+
+<label>MITTENTE:</label>
+
+<input
+    type="email"
+    value="plinio.at.258@gmail.com"
+    readonly
+    autocomplete="off"
+>
+
+<label>DESTINATARIO:</label>
+
+<input
+    type="email"
+    name="destinatario"
+    placeholder="destinatario@email.it"
+    required
+>
+
+<label>OGGETTO:</label>
+
+<input
+    type="text"
+    name="oggetto"
+    placeholder="Oggetto email"
+    required
+>
+
+<label>CONTENUTO:</label>
+
+<textarea
+    name="contenuto"
+    placeholder="Scrivi il messaggio..."
+    required
+></textarea>
+
+<label>ALLEGATI:</label>
+
+<input
+    type="file"
+    name="allegato"
+    id="allegato"
+    multiple
+>
+
+<p class="nota">
+Puoi selezionare più file: PDF, Word, Excel,
+PowerPoint, immagini, ZIP e altri formati.
+</p>
+
+<div id="listaAllegati">
+Nessun allegato selezionato
+</div>
+
+<p class="nota">
+Massimo 9 MB per file e 10 MB complessivi per richiesta.
+</p>
+
+<button
+    type="submit"
+    class="invia"
+    id="pulsanteInvia"
+>
+INVIA EMAIL
+</button>
+
+</form>
+
+<p id="risultato"></p>
+
+<button
+    type="button"
+    id="pulsanteEsci"
+>
+ESCI DALL'AREA RISERVATA
+</button>
+
+</div>
+
+</div>
+
+
+<script>
+
+// ==============================================
+// CONFIGURAZIONE
+// ==============================================
+
+const API = "https://invio-email.onrender.com";
+
+const MAX_FILE = 9 * 1024 * 1024;
+
+const MAX_TOTALE = 10 * 1024 * 1024;
+
+
+// ==============================================
+// ELEMENTI
+// ==============================================
+
+const schermataAccesso =
+    document.getElementById("schermataAccesso");
+
+const areaEmail =
+    document.getElementById("areaEmail");
+
+const loginForm =
+    document.getElementById("loginForm");
+
+const messaggioLogin =
+    document.getElementById("messaggioLogin");
+
+const pulsanteAccesso =
+    document.getElementById("pulsanteAccesso");
+
+const form =
+    document.getElementById("emailForm");
+
+const risultato =
+    document.getElementById("risultato");
+
+const pulsante =
+    document.getElementById("pulsanteInvia");
+
+const campoAllegato =
+    document.getElementById("allegato");
+
+const listaAllegati =
+    document.getElementById("listaAllegati");
+
+const pulsanteEsci =
+    document.getElementById("pulsanteEsci");
+
+
+// ==============================================
+// GESTIONE SCHERMATE
+// ==============================================
+
+function mostraAccesso() {
+
+    schermataAccesso.style.display = "block";
+
+    areaEmail.style.display = "none";
+
+}
+
+function mostraEmail() {
+
+    schermataAccesso.style.display = "none";
+
+    areaEmail.style.display = "block";
+
+}
+
+
+// ==============================================
+// VERIFICA SESSIONE
+// ==============================================
+
+async function verificaAccesso() {
+
+    const token =
+        sessionStorage.getItem("tokenAccesso");
+
+    if (!token) {
+
+        mostraAccesso();
+
+        return;
+
+    }
+
+    try {
+
+        const risposta = await fetch(
+            API + "/verifica-accesso",
+            {
+                method: "GET",
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            }
+        );
+
+        if (risposta.ok) {
+
+            mostraEmail();
+
+        } else {
+
+            sessionStorage.removeItem("tokenAccesso");
+
+            mostraAccesso();
+
+        }
+
+    } catch (errore) {
+
+        mostraAccesso();
+
+        messaggioLogin.style.color = "#ff5555";
+
+        messaggioLogin.textContent =
+            "Impossibile collegarsi al server. Riprova.";
+
+    }
+
+}
+
+
+// ==============================================
+// ACCESSO CON PASSWORD
+// ==============================================
+
+loginForm.addEventListener("submit", async function(e) {
+
+    e.preventDefault();
+
+    const password =
+        document.getElementById("passwordAccesso").value;
+
+    messaggioLogin.style.color = "#ffffff";
+
+    messaggioLogin.textContent =
+        "Verifica password in corso...";
+
+    pulsanteAccesso.disabled = true;
+
+    pulsanteAccesso.textContent = "ATTENDERE...";
+
+    try {
+
+        const risposta = await fetch(
+            API + "/login",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    password: password
+                })
+            }
+        );
+
+        const dati = await risposta.json();
+
+        if (!risposta.ok) {
+
+            throw new Error(
+                dati.errore || "Password non corretta"
+            );
+
+        }
+
+        if (!dati.token) {
+
+            throw new Error("Token di accesso mancante");
+
+        }
+
+        // Memorizza il token nella sessione del browser
+
+        sessionStorage.setItem(
+            "tokenAccesso",
+            dati.token
+        );
+
+        loginForm.reset();
+
+        messaggioLogin.textContent = "";
+
+        mostraEmail();
+
+    } catch (errore) {
+
+        messaggioLogin.style.color = "#ff5555";
+
+        messaggioLogin.textContent =
+            errore.message;
+
+    } finally {
+
+        pulsanteAccesso.disabled = false;
+
+        pulsanteAccesso.textContent = "ACCEDI";
+
+    }
+
+});
+
+
+// ==============================================
+// USCITA DALL'AREA RISERVATA
+// ==============================================
+
+pulsanteEsci.addEventListener("click", function() {
+
+    sessionStorage.removeItem("tokenAccesso");
+
+    form.reset();
+
+    listaAllegati.textContent =
+        "Nessun allegato selezionato";
+
+    risultato.textContent = "";
+
+    mostraAccesso();
+
+});
+
+
+// ==============================================
+// VISUALIZZA GLI ALLEGATI
+// ==============================================
+
+campoAllegato.addEventListener("change", function() {
+
+    const files = this.files;
+
+    listaAllegati.innerHTML = "";
+
+    if (files.length === 0) {
+
+        listaAllegati.textContent =
+            "Nessun allegato selezionato";
+
+        return;
+
+    }
+
+    const elenco = document.createElement("ul");
+
+    for (const file of files) {
+
+        const elemento = document.createElement("li");
+
+        elemento.textContent =
+            file.name + " (" +
+            (file.size / 1024 / 1024).toFixed(2) +
+            " MB)";
+
+        elenco.appendChild(elemento);
+
+    }
+
+    listaAllegati.appendChild(elenco);
+
+});
+
+
+// ==============================================
+// INVIO EMAIL
+// ==============================================
+
+form.addEventListener("submit", async function(e) {
+
+    e.preventDefault();
+
+    const token =
+        sessionStorage.getItem("tokenAccesso");
+
+    if (!token) {
+
+        sessionStorage.removeItem("tokenAccesso");
+
+        mostraAccesso();
+
+        return;
+
+    }
+
+    const files = campoAllegato.files;
+
+    let totale = 0;
+
+
+    // CONTROLLO DIMENSIONI ALLEGATI
+
+    for (const file of files) {
+
+        if (file.size > MAX_FILE) {
+
+            risultato.style.color = "red";
+
+            risultato.textContent =
+                "Il file " + file.name +
+                " supera il limite di 9 MB.";
+
+            return;
+
+        }
+
+        totale += file.size;
+
+    }
+
+
+    // CONTROLLO DIMENSIONE COMPLESSIVA
+
+    if (totale > MAX_TOTALE) {
+
+        risultato.style.color = "red";
+
+        risultato.textContent =
+            "Gli allegati superano complessivamente 10 MB.";
+
+        return;
+
+    }
+
+
+    // PREPARAZIONE DATI
+
+    const dati = new FormData(form);
+
+
+    // STATO PULSANTE
+
+    pulsante.disabled = true;
+
+    pulsante.textContent = "INVIO IN CORSO...";
+
+    risultato.style.color = "#fff";
+
+    risultato.textContent =
+        "Attendere, invio email in corso...";
+
+
+    try {
+
+        const risposta = await fetch(
+            API + "/invia",
+            {
+                method: "POST",
+
+                headers: {
+                    "Authorization": "Bearer " + token
+                },
+
+                body: dati
+            }
+        );
+
+
+        // LETTURA RISPOSTA SERVER
+
+        const risultatoJson = await risposta.json();
+
+
+        // SESSIONE SCADUTA
+
+        if (risposta.status === 401) {
+
+            sessionStorage.removeItem("tokenAccesso");
+
+            mostraAccesso();
+
+            messaggioLogin.style.color = "#ff5555";
+
+            messaggioLogin.textContent =
+                "Sessione scaduta. Inserisci nuovamente la password.";
+
+            throw new Error("Sessione scaduta");
+
+        }
+
+
+        if (!risposta.ok) {
+
+            throw new Error(
+                risultatoJson.errore ||
+                "Errore durante l'invio"
+            );
+
+        }
+
+
+        // INVIO RIUSCITO
+
+        risultato.style.color = "#00ff80";
+
+        risultato.textContent =
+            risultatoJson.messaggio ||
+            "Email inviata correttamente!";
+
+
+        // PULIZIA CAMPI
+
+        form.reset();
+
+        listaAllegati.textContent =
+            "Nessun allegato selezionato";
+
+
+    } catch (errore) {
+
+        risultato.style.color = "#ff5555";
+
+        risultato.textContent =
+            "ERRORE: " + errore.message;
+
+    } finally {
+
+        pulsante.disabled = false;
+
+        pulsante.textContent = "INVIA EMAIL";
+
+    }
+
+});
+
+
+// ==============================================
+// AVVIO
+// ==============================================
+
+verificaAccesso();
+
+</script>
+
+</body>
+
+</html>
