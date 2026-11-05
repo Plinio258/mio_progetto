@@ -1,0 +1,160 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test Web Scraping</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #222;
+    color: white;
+    padding: 20px;
+}
+
+input {
+    width: 75%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+button {
+    padding: 10px 15px;
+    background: #1976d2;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+#risultato {
+    background: #444;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 6px;
+    overflow-x: auto;
+}
+
+table {
+    border-collapse: collapse;
+    background: white;
+    color: black;
+    margin-top: 15px;
+}
+
+td, th {
+    border: 1px solid #aaa;
+    padding: 8px;
+}
+
+th {
+    background: #263238;
+    color: white;
+}
+</style>
+</head>
+
+<body>
+
+<h2>TEST WEB SCRAPING CON FETCH</h2>
+
+<input
+    type="text"
+    id="url"
+    value="https://example.com"
+    placeholder="Inserisci URL"
+>
+
+<button onclick="scraping()">SCARICA PAGINA</button>
+
+<div id="risultato">
+    In attesa...
+</div>
+
+<script>
+
+async function scraping() {
+
+    const url = document.getElementById("url").value.trim();
+
+    const risultato = document.getElementById("risultato");
+
+    risultato.textContent = "Caricamento pagina...";
+
+    try {
+
+        // Scarica HTML
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error("Errore HTTP " + response.status);
+        }
+
+        const html = await response.text();
+
+        // Analizza HTML
+        const parser = new DOMParser();
+
+        const doc = parser.parseFromString(
+            html,
+            "text/html"
+        );
+
+        // Estrae titolo
+        const titolo = doc.querySelector("title")?.textContent || "Nessun titolo";
+
+        // Estrae testo
+        const testo = doc.body?.innerText || "";
+
+        // Estrae tabelle
+        const tabelle = doc.querySelectorAll("table");
+
+        let htmlRisultato = `
+            <h3>Titolo pagina</h3>
+            <p>${escapeHtml(titolo)}</p>
+
+            <h3>Testo pagina</h3>
+            <pre>${escapeHtml(testo.slice(0, 5000))}</pre>
+
+            <h3>Tabelle trovate: ${tabelle.length}</h3>
+        `;
+
+        tabelle.forEach((tabella, indice) => {
+
+            htmlRisultato += `
+                <h4>Tabella ${indice + 1}</h4>
+                ${tabella.outerHTML}
+            `;
+
+        });
+
+        risultato.innerHTML = htmlRisultato;
+
+    } catch (error) {
+
+        risultato.textContent =
+            "Errore durante il download: " + error.message;
+
+    }
+
+}
+
+// Protezione output HTML
+function escapeHtml(value) {
+
+    return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+    })[char]);
+
+}
+
+</script>
+
+</body>
+</html>
