@@ -1,0 +1,399 @@
+
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Invio Email</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: #000;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 10px;
+}
+
+.contenitore {
+    background: #404040;
+    max-width: 450px;
+    margin: auto;
+    padding: 14px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+h2 {
+    text-align: center;
+    color: white;
+    font-size: 17px;
+    margin: 0 0 12px 0;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    font-size: 11px;
+    margin-top: 7px;
+    color: white;
+}
+
+input,
+textarea {
+    width: 100%;
+    padding: 6px 8px;
+    margin-top: 3px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    font-size: 11px;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 65px;
+    height: 65px;
+}
+
+input:focus,
+textarea:focus {
+    outline: none;
+    border-color: #0f86fc;
+}
+
+input[type="file"] {
+    background: white;
+    color: #333;
+    font-size: 10px;
+}
+
+button.invia {
+    width: 100%;
+    background: #0f86fc;
+    color: white;
+    border: none;
+    padding: 9px;
+    margin-top: 12px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button.invia:hover {
+    background: #086acb;
+}
+
+button:disabled {
+    background: #999;
+    cursor: not-allowed;
+}
+
+#risultato {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    overflow-wrap: anywhere;
+}
+
+.nota {
+    font-size: 9px;
+    color: #ccc;
+    margin: 3px 0;
+}
+
+#listaAllegati {
+    color: #ddd;
+    font-size: 10px;
+    margin-top: 5px;
+    overflow-wrap: anywhere;
+}
+
+#listaAllegati ul {
+    padding-left: 18px;
+    margin: 4px 0;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="contenitore">
+
+<h2>INVIO EMAIL</h2>
+
+<form id="emailForm">
+
+<label>MITTENTE:</label>
+
+<input
+    type="email"
+    value="plinio.at.258@gmail.com"
+    readonly
+    autocomplete="off"
+>
+
+<label>DESTINATARIO:</label>
+
+<input
+    type="email"
+    name="destinatario"
+    placeholder="destinatario@email.it"
+    required
+>
+
+<label>OGGETTO:</label>
+
+<input
+    type="text"
+    name="oggetto"
+    placeholder="Oggetto email"
+    required
+>
+
+<label>CONTENUTO:</label>
+
+<textarea
+    name="contenuto"
+    placeholder="Scrivi il messaggio..."
+    required
+></textarea>
+
+<label>ALLEGATI:</label>
+
+<input
+    type="file"
+    name="allegato"
+    id="allegato"
+    multiple
+>
+
+<p class="nota">
+Puoi selezionare più file: PDF, Word, Excel,
+PowerPoint, immagini, ZIP e altri formati.
+</p>
+
+<div id="listaAllegati">
+Nessun allegato selezionato
+</div>
+
+<p class="nota">
+Massimo 9 MB per file e 10 MB complessivi per richiesta.
+</p>
+
+<button
+    type="submit"
+    class="invia"
+    id="pulsanteInvia"
+>
+INVIA EMAIL
+</button>
+
+</form>
+
+<p id="risultato"></p>
+
+</div>
+
+
+<script>
+
+// --------------------------------------------------
+// ELEMENTI
+// --------------------------------------------------
+
+const form = document.getElementById("emailForm");
+
+const risultato = document.getElementById("risultato");
+
+const pulsante = document.getElementById("pulsanteInvia");
+
+const campoAllegato = document.getElementById("allegato");
+
+const listaAllegati = document.getElementById("listaAllegati");
+
+const MAX_FILE = 9 * 1024 * 1024;
+
+const MAX_TOTALE = 10 * 1024 * 1024;
+
+
+// --------------------------------------------------
+// VISUALIZZA GLI ALLEGATI SELEZIONATI
+// --------------------------------------------------
+
+campoAllegato.addEventListener("change", function() {
+
+    const files = this.files;
+
+    listaAllegati.innerHTML = "";
+
+    if (files.length === 0) {
+
+        listaAllegati.textContent =
+            "Nessun allegato selezionato";
+
+        return;
+
+    }
+
+    const elenco = document.createElement("ul");
+
+    for (const file of files) {
+
+        const elemento = document.createElement("li");
+
+        elemento.textContent =
+            file.name + " (" +
+            (file.size / 1024 / 1024).toFixed(2) +
+            " MB)";
+
+        elenco.appendChild(elemento);
+
+    }
+
+    listaAllegati.appendChild(elenco);
+
+});
+
+
+// --------------------------------------------------
+// INVIO EMAIL
+// --------------------------------------------------
+
+form.addEventListener("submit", async function(e) {
+
+    e.preventDefault();
+
+    const files = campoAllegato.files;
+
+    let totale = 0;
+
+
+    // Controllo dimensioni allegati
+
+    for (const file of files) {
+
+        if (file.size > MAX_FILE) {
+
+            risultato.style.color = "red";
+
+            risultato.textContent =
+                "Il file " + file.name +
+                " supera il limite di 9 MB.";
+
+            return;
+
+        }
+
+        totale += file.size;
+
+    }
+
+
+    // Controllo dimensione complessiva
+
+    if (totale > MAX_TOTALE) {
+
+        risultato.style.color = "red";
+
+        risultato.textContent =
+            "Gli allegati superano complessivamente 10 MB.";
+
+        return;
+
+    }
+
+
+    // Preparazione dati
+
+    const dati = new FormData(form);
+
+
+    // Stato pulsante
+
+    pulsante.disabled = true;
+
+    pulsante.textContent = "INVIO IN CORSO...";
+
+    risultato.style.color = "#fff";
+
+    risultato.textContent =
+        "Attendere, invio email in corso...";
+
+
+    try {
+
+        const risposta = await fetch(
+            "https://invio-email.onrender.com/invia",
+            {
+                method: "POST",
+                body: dati
+            }
+        );
+
+
+        // Lettura risposta server
+
+        const risultatoJson = await risposta.json();
+
+
+        if (!risposta.ok) {
+
+            throw new Error(
+                risultatoJson.errore ||
+                "Errore durante l'invio"
+            );
+
+        }
+
+
+        // Invio riuscito
+
+        risultato.style.color = "#00ff80";
+
+        risultato.textContent =
+            risultatoJson.messaggio ||
+            "Email inviata correttamente!";
+
+
+        // Pulisce i campi
+
+        form.reset();
+
+        listaAllegati.textContent =
+            "Nessun allegato selezionato";
+
+
+    } catch (errore) {
+
+        risultato.style.color = "#ff5555";
+
+        risultato.textContent =
+            "ERRORE: " + errore.message;
+
+
+    } finally {
+
+        pulsante.disabled = false;
+
+        pulsante.textContent = "INVIA EMAIL";
+
+    }
+
+});
+
+</script>
+
+</body>
+
+</html>
