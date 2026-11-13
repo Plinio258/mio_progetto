@@ -37,4 +37,4 @@ BTP,ISIN,Descrizione,Q.tà,P.U.,Cedola Annua,Scadenza
 2,FR0010070060,Oat Apr35 Eur 4.75%,0.00,0.00,4.75,25/04/2035
 
 LIQUIDITA
--132.82
+-96.82
